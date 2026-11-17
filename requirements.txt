@@ -1,0 +1,13 @@
+# 基础
+torch
+torchvision
+
+# Course 2 生成模型
+diffusers
+transformers
+
+# Course 3 部署与加速
+fastai
+pytorch-lightning
+torchserve
+onnx
