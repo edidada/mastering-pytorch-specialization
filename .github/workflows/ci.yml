@@ -8,9 +8,46 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-run:
-    name: compile, run and test
-    runs-on: ubuntu-latest
+  cpp-build-and-run:
+    name: CMake + LibTorch (C++ build and run)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python (source of the LibTorch wheel)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install LibTorch (CPU)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install filelock typing-extensions sympy networkx jinja2 fsspec
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -c "import torch; print('torch', torch.__version__, '| cmake:', torch.utils.cmake_prefix_path)"
+
+      - name: Configure (CMake)
+        run: |
+          TORCH_CMAKE_PREFIX="$(python -c 'import torch; print(torch.utils.cmake_prefix_path)')"
+          echo "TorchConfig.cmake prefix: $TORCH_CMAKE_PREFIX"
+          cmake -S course-3-production-deployment/serving/libtorch-cpp-example \
+                -B build \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_PREFIX_PATH="$TORCH_CMAKE_PREFIX"
+
+      - name: Build (real C++ compile + link against LibTorch)
+        run: cmake --build build --parallel 2
+
+      - name: Run executable
+        run: |
+          TORCH_LIB="$(python -c 'import os, torch; print(os.path.join(os.path.dirname(torch.__file__), "lib"))')"
+          export LD_LIBRARY_PATH="$TORCH_LIB:$LD_LIBRARY_PATH"
+          ./build/smoke_demo
+
+  python-core:
+    name: python core (byte-compile, demo, tests)
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

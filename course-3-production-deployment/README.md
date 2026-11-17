@@ -11,8 +11,11 @@ TorchServe 配置、Flask 服务示例放 `serving/`，与 notebook 分开，便
 | fastai / PyTorch Lightning | `notebooks/fastai-lightning.ipynb` | 未开始 |
 | TorchServe 配置 | `serving/torchserve-config/` | 未开始 |
 | Flask 服务示例 | `serving/flask-server-example/` | 未开始 |
+| LibTorch C++ 示例 | `serving/libtorch-cpp-example/` | 已完成（CI 真编译并运行） |
 
 覆盖 TorchServe、ONNX、TorchScript 导出、移动端部署，以及 fastai / PyTorch Lightning 加速。
+`serving/libtorch-cpp-example/` 用 CMake + g++ 链接 LibTorch，把 C++ 源码编译成可执行文件，
+对应「导出模型后由 C++ 侧 libtorch 加载推理」这条链路；构建与运行说明见该目录的 README。
 
 ## 模型文件不入库
 
